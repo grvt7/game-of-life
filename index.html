@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conway's Game of Life</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="logo">LIFE</span>
+        <span class="logo-sub">Conway's Game of Life</span>
+      </div>
+      <div class="topbar-center">
+        <div class="stat-pill">
+          <span class="stat-label">GEN</span>
+          <span class="stat-value" id="generationCount">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">POP</span>
+          <span class="stat-value" id="populationCount">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">FPS</span>
+          <span class="stat-value" id="fpsDisplay">0</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" id="helpBtn" title="Help">?</button>
+        <button class="icon-btn" id="settingsBtn" title="Settings">⚙</button>
+      </div>
+    </div>
+
+    <!-- Left Sidebar -->
+    <div class="sidebar left-sidebar" id="leftSidebar">
+      <div class="sidebar-section">
+        <div class="section-label">SIMULATION</div>
+        <p style="color: var(--text-dim); font-size: 11px">
+          Controls coming soon...
+        </p>
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="sidebar right-sidebar" id="rightSidebar">
+      <div class="sidebar-section">
+        <div class="section-label">PATTERNS</div>
+        <p style="color: var(--text-dim); font-size: 11px">
+          Patterns coming soon...
+        </p>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="bottombar">
+      <span id="coordDisplay">x: 0, y: 0</span>
+      <span class="bottombar-sep">|</span>
+      <span id="zoomDisplay">zoom: 10px</span>
+      <span class="bottombar-sep">|</span>
+      <span>Scroll to zoom · Drag to pan · Click to draw</span>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
