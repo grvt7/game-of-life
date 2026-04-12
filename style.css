@@ -166,6 +166,59 @@ body {
   font-weight: 500;
 }
 
+.ctrl-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.ctrl-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+.ctrl-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.ctrl-btn.primary:hover {
+  background: #7aa3ff;
+}
+.ctrl-btn.danger:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+.ctrl-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+.ctrl-btn.full-width {
+  width: 100%;
+  justify-content: center;
+  margin-top: 6px;
+}
+.control-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.control-row .ctrl-btn {
+  flex: 1;
+  justify-content: center;
+}
+
 .bottombar {
   position: fixed;
   bottom: 0;

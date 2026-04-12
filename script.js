@@ -18,6 +18,13 @@ let isDrawing = false;
 let drawValue = 1;
 let lastDrawnCell = null;
 
+// Simulation
+let running = false;
+let animFrame = null;
+let lastFrameTime = 0;
+let fps = 10;
+let frameInterval = 1000 / fps;
+
 // Helpers
 function key(r, c) {
   return `${r},${c}`;
@@ -119,6 +126,72 @@ function toggleCell(r, c) {
   document.getElementById("populationCount").textContent = population;
 }
 
+function step() {
+  const neighborCount = new Map();
+
+  cells.forEach((k) => {
+    const [r, c] = unkey(k);
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const nk = key(r + dr, c + dc);
+        neighborCount.set(nk, (neighborCount.get(nk) || 0) + 1);
+      }
+    }
+  });
+
+  const next = new Set();
+  neighborCount.forEach((count, k) => {
+    const alive = cells.has(k);
+    if (alive && (count === 2 || count === 3)) next.add(k);
+    if (!alive && count === 3) next.add(k);
+  });
+
+  cells = next;
+  generation++;
+  population = cells.size;
+  document.getElementById("generationCount").textContent =
+    generation.toLocaleString();
+  document.getElementById("populationCount").textContent =
+    population.toLocaleString();
+}
+
+function gameLoop(timestamp) {
+  if (!running) return;
+  animFrame = requestAnimationFrame(gameLoop);
+  const delta = timestamp - lastFrameTime;
+  if (delta < frameInterval) return;
+  lastFrameTime = timestamp - (delta % frameInterval);
+  step();
+  render();
+}
+
+function play() {
+  if (running) return;
+  running = true;
+  lastFrameTime = 0;
+  animFrame = requestAnimationFrame(gameLoop);
+  document.getElementById("playBtn").classList.add("active");
+  document.getElementById("pauseBtn").classList.remove("active");
+}
+
+function pause() {
+  running = false;
+  if (animFrame) cancelAnimationFrame(animFrame);
+  document.getElementById("pauseBtn").classList.add("active");
+  document.getElementById("playBtn").classList.remove("active");
+}
+
+function clearGrid() {
+  pause();
+  cells = new Set();
+  generation = 0;
+  population = 0;
+  document.getElementById("generationCount").textContent = "0";
+  document.getElementById("populationCount").textContent = "0";
+  render();
+}
+
 canvas.addEventListener("mousedown", (e) => {
   if (e.button !== 0) return;
   isDrawing = true;
@@ -151,3 +224,16 @@ canvas.addEventListener("mouseleave", () => {
 
 // Init
 render();
+
+// Buttons - Left Sidebar
+document.getElementById("playBtn").onclick = play;
+document.getElementById("pauseBtn").onclick = pause;
+document.getElementById("stepBtn").onclick = () => {
+  if (!running) {
+    step();
+    render();
+  }
+};
+document.getElementById("resetBtn").onclick = clearGrid;
+
+pause(); // default state
