@@ -68,6 +68,73 @@ function centerView() {
   originX = canvas.width / 2;
   originY = canvas.height / 2;
 }
+
+// Zoom
+function zoomAt(mx, my, factor) {
+  const { r, c } = screenToCell(mx, my);
+  const newSize = Math.max(MIN_CELL, Math.min(MAX_CELL, cellSize * factor));
+  originX = mx - c * newSize;
+  originY = my - r * newSize;
+  cellSize = newSize;
+  document.getElementById("zoomDisplay").textContent =
+    `zoom: ${Math.round(cellSize)}px`;
+  render();
+}
+
+canvas.addEventListener(
+  "wheel",
+  (e) => {
+    e.preventDefault();
+    zoomAt(e.offsetX, e.offsetY, e.deltaY < 0 ? 1.12 : 0.9);
+  },
+  { passive: false },
+);
+
+// Pan
+let isPanning = false;
+let panStart = { x: 0, y: 0 };
+let panOriginStart = { x: 0, y: 0 };
+
+canvas.addEventListener(
+  "mousedown",
+  (e) => {
+    if (e.button === 1) {
+      // middle click
+      isPanning = true;
+      panStart = { x: e.clientX, y: e.clientY };
+      panOriginStart = { x: originX, y: originY };
+      e.preventDefault();
+    }
+  },
+  true,
+); // capture phase so it fires before the draw handler
+
+canvas.addEventListener(
+  "mousemove",
+  (e) => {
+    if (!isPanning) return;
+    originX = panOriginStart.x + (e.clientX - panStart.x);
+    originY = panOriginStart.y + (e.clientY - panStart.y);
+    render();
+  },
+  true,
+);
+
+canvas.addEventListener(
+  "mouseup",
+  (e) => {
+    if (e.button === 1) isPanning = false;
+  },
+  true,
+);
+canvas.addEventListener(
+  "mouseleave",
+  () => {
+    isPanning = false;
+  },
+  true,
+);
+
 centerView();
 
 // Render
