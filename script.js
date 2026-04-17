@@ -12,6 +12,7 @@ const MIN_CELL = 2,
 let cells = new Set(); // keys are "row,col" strings
 let generation = 0;
 let population = 0;
+let drawMode = "draw"; // 'draw' | 'erase' | 'pan'
 
 // Interaction
 let isDrawing = false;
@@ -280,6 +281,28 @@ canvas.addEventListener("mousedown", (e) => {
   render();
 });
 
+canvas.addEventListener("mousedown", (e) => {
+  if (e.button === 1 || drawMode === "pan") {
+    isPanning = true;
+    panStart = { x: e.clientX, y: e.clientY };
+    panOriginStart = { x: originX, y: originY };
+    canvas.classList.add("panning");
+    e.preventDefault();
+    return;
+  }
+  if (e.button !== 0) return;
+  isDrawing = true;
+  const { r, c } = screenToCell(e.offsetX, e.offsetY);
+  if (drawMode === "erase") {
+    drawValue = 0;
+  } else {
+    drawValue = cells.has(key(r, c)) ? 0 : 1;
+  }
+  toggleCell(r, c);
+  lastDrawnCell = { r, c };
+  render();
+});
+
 canvas.addEventListener("mousemove", (e) => {
   const { r, c } = screenToCell(e.offsetX, e.offsetY);
   document.getElementById("coordDisplay").textContent = `x: ${c}, y: ${r}`;
@@ -299,6 +322,29 @@ canvas.addEventListener("mouseleave", () => {
   isDrawing = false;
   lastDrawnCell = null;
 });
+canvas.addEventListener("mouseup", () => {
+  isDrawing = false;
+  isPanning = false;
+  canvas.classList.remove("panning");
+  lastDrawnCell = null;
+});
+canvas.addEventListener("mouseleave", () => {
+  isDrawing = false;
+  isPanning = false;
+  canvas.classList.remove("panning");
+  lastDrawnCell = null;
+});
+
+function setMode(mode) {
+  drawMode = mode;
+  document
+    .querySelectorAll(".mode-btn")
+    .forEach((b) => b.classList.remove("active"));
+  document.querySelector(`[data-mode="${mode}"]`).classList.add("active");
+  canvas.className = "";
+  if (mode === "pan") canvas.classList.add("pan-mode");
+  if (mode === "erase") canvas.classList.add("erase-mode");
+}
 
 // Init
 render();
@@ -318,5 +364,8 @@ document.getElementById("fpsSlider").oninput = function () {
   frameInterval = 1000 / fps;
   document.getElementById("fpsValue").textContent = fps;
 };
+document.querySelectorAll(".mode-btn").forEach((btn) => {
+  btn.onclick = () => setMode(btn.dataset.mode);
+});
 
 pause(); // default state
