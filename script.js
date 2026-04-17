@@ -24,6 +24,8 @@ let animFrame = null;
 let lastFrameTime = 0;
 let fps = 10;
 let frameInterval = 1000 / fps;
+let fpsFrames = 0;
+let fpsAccum = 0;
 
 // Helpers
 function key(r, c) {
@@ -227,6 +229,15 @@ function gameLoop(timestamp) {
   if (!running) return;
   animFrame = requestAnimationFrame(gameLoop);
   const delta = timestamp - lastFrameTime;
+  fpsAccum += delta;
+  fpsFrames++;
+  if (fpsAccum >= 500) {
+    document.getElementById("fpsDisplay").textContent = Math.round(
+      fpsFrames / (fpsAccum / 1000),
+    );
+    fpsFrames = 0;
+    fpsAccum = 0;
+  }
   if (delta < frameInterval) return;
   lastFrameTime = timestamp - (delta % frameInterval);
   step();
@@ -302,5 +313,10 @@ document.getElementById("stepBtn").onclick = () => {
   }
 };
 document.getElementById("resetBtn").onclick = clearGrid;
+document.getElementById("fpsSlider").oninput = function () {
+  fps = parseInt(this.value);
+  frameInterval = 1000 / fps;
+  document.getElementById("fpsValue").textContent = fps;
+};
 
 pause(); // default state
