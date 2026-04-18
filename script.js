@@ -315,16 +315,6 @@ function clearGrid() {
 }
 
 canvas.addEventListener("mousedown", (e) => {
-  if (e.button !== 0) return;
-  isDrawing = true;
-  const { r, c } = screenToCell(e.offsetX, e.offsetY);
-  drawValue = cells.has(key(r, c)) ? 0 : 1;
-  toggleCell(r, c);
-  lastDrawnCell = { r, c };
-  render();
-});
-
-canvas.addEventListener("mousedown", (e) => {
   if (e.button === 1 || drawMode === "pan") {
     isPanning = true;
     panStart = { x: e.clientX, y: e.clientY };
