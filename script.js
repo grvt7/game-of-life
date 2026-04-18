@@ -28,6 +28,10 @@ let frameInterval = 1000 / fps;
 let fpsFrames = 0;
 let fpsAccum = 0;
 
+// Born/ Dying Cells
+let bornCells = new Set();
+let dyingCells = new Set();
+
 // Pattern Library
 const PATTERNS = {
   "Still Lifes": [
@@ -183,6 +187,33 @@ canvas.addEventListener(
 
 centerView();
 
+function fitToContent() {
+  if (cells.size === 0) {
+    centerView();
+    render();
+    return;
+  }
+  const coords = [...cells].map((k) => unkey(k));
+  const minR = Math.min(...coords.map(([r]) => r));
+  const maxR = Math.max(...coords.map(([r]) => r));
+  const minC = Math.min(...coords.map(([, c]) => c));
+  const maxC = Math.max(...coords.map(([, c]) => c));
+  const h = maxR - minR + 1,
+    w = maxC - minC + 1;
+  cellSize = Math.max(
+    MIN_CELL,
+    Math.min(
+      MAX_CELL,
+      Math.floor(Math.min(canvas.width / (w + 4), canvas.height / (h + 4))),
+    ),
+  );
+  originX = (canvas.width - w * cellSize) / 2 - minC * cellSize;
+  originY = (canvas.height - h * cellSize) / 2 - minR * cellSize;
+  document.getElementById("zoomDisplay").textContent =
+    `zoom: ${Math.round(cellSize)}px`;
+  render();
+}
+
 // Render
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -228,6 +259,20 @@ function render() {
       cellSize - pad * 2,
     );
   });
+
+  // Born cell highlight
+  ctx.fillStyle = "#a0ffb0";
+  bornCells.forEach((k) => {
+    if (!cells.has(k)) return;
+    const [r, c] = unkey(k);
+    if (r < minR || r > maxR || c < minC || c > maxC) return;
+    ctx.fillRect(
+      c * cellSize + originX + pad,
+      r * cellSize + originY + pad,
+      cellSize - pad * 2,
+      cellSize - pad * 2,
+    );
+  });
 }
 
 // Mouse drawing
@@ -254,10 +299,21 @@ function step() {
   });
 
   const next = new Set();
+  bornCells = new Set();
+  dyingCells = new Set();
   neighborCount.forEach((count, k) => {
     const alive = cells.has(k);
-    if (alive && (count === 2 || count === 3)) next.add(k);
-    if (!alive && count === 3) next.add(k);
+    if (alive && (count === 2 || count === 3)) {
+      next.add(k);
+    } else if (!alive && count === 3) {
+      next.add(k);
+      bornCells.add(k);
+    } else if (alive) {
+      dyingCells.add(k);
+    }
+  });
+  cells.forEach((k) => {
+    if (!neighborCount.has(k)) dyingCells.add(k);
   });
 
   cells = next;
@@ -303,6 +359,29 @@ function pause() {
   document.getElementById("pauseBtn").classList.add("active");
   document.getElementById("playBtn").classList.remove("active");
 }
+
+function randomize() {
+  const density =
+    parseInt(document.getElementById("densitySlider").value) / 100;
+  const { r: minR, c: minC } = screenToCell(0, 0);
+  const { r: maxR, c: maxC } = screenToCell(canvas.width, canvas.height);
+  cells = new Set();
+  for (let r = minR; r <= maxR; r++)
+    for (let c = minC; c <= maxC; c++)
+      if (Math.random() < density) cells.add(key(r, c));
+  generation = 0;
+  population = cells.size;
+  document.getElementById("generationCount").textContent = "0";
+  document.getElementById("populationCount").textContent =
+    population.toLocaleString();
+  render();
+}
+
+document.getElementById("fitBtn").onclick = fitToContent;
+document.getElementById("randomBtn").onclick = randomize;
+document.getElementById("densitySlider").oninput = function () {
+  document.getElementById("densityValue").textContent = this.value;
+};
 
 function clearGrid() {
   pause();

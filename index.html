@@ -70,6 +70,44 @@
         <div class="slider-value-row"><span id="fpsValue">10</span> fps</div>
       </div>
       <div class="sidebar-section">
+        <div class="section-label">ZOOM</div>
+        <div class="slider-row">
+          <span class="slider-min">−</span>
+          <input
+            type="range"
+            id="zoomSlider"
+            min="1"
+            max="60"
+            value="10"
+            class="slider"
+          />
+          <span class="slider-max">+</span>
+        </div>
+        <div class="slider-value-row">
+          <span id="zoomValue">10</span> px/cell
+        </div>
+        <button class="ctrl-btn full-width" id="fitBtn">Fit to Screen</button>
+      </div>
+      <div class="sidebar-section">
+        <div class="section-label">POPULATE</div>
+        <button class="ctrl-btn full-width" id="randomBtn">Randomize</button>
+        <div class="slider-row" style="margin-top: 8px">
+          <span class="slider-min">0%</span>
+          <input
+            type="range"
+            id="densitySlider"
+            min="5"
+            max="70"
+            value="30"
+            class="slider"
+          />
+          <span class="slider-max">70%</span>
+        </div>
+        <div class="slider-value-row">
+          Density: <span id="densityValue">30</span>%
+        </div>
+      </div>
+      <div class="sidebar-section">
         <div class="section-label">DRAW MODE</div>
         <div class="mode-toggle">
           <button class="mode-btn active" data-mode="draw">✏ Draw</button>
