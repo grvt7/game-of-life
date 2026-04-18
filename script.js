@@ -28,6 +28,49 @@ let frameInterval = 1000 / fps;
 let fpsFrames = 0;
 let fpsAccum = 0;
 
+// Pattern Library
+const PATTERNS = {
+  "Still Lifes": [
+    { name: "Block", size: "2×2", rle: "x=2,y=2\noo$oo!" },
+    { name: "Beehive", size: "4×3", rle: "x=4,y=3\nb2ob$o2bo$b2ob!" },
+    { name: "Loaf", size: "4×4", rle: "x=4,y=4\nb2ob$o2bo$bobo$2bo!" },
+    { name: "Boat", size: "3×3", rle: "x=3,y=3\n2ob$obo$bo!" },
+  ],
+  Oscillators: [
+    { name: "Blinker (p2)", size: "3×1", rle: "x=3,y=1\n3o!" },
+    { name: "Toad (p2)", size: "4×2", rle: "x=4,y=2\nb3o$3ob!" },
+    { name: "Beacon (p2)", size: "4×4", rle: "x=4,y=4\n2o2b$2o2b$2b2o$2b2o!" },
+    {
+      name: "Pulsar (p3)",
+      size: "13×13",
+      rle: "x=13,y=13\n2b3o3b3o2b$4b2obob2o4b$o4bobo bo4bo$o4bobo bo4bo$o4b3ob3o4bo$2b2obobo bob2o$7b bo$2b2obobo bob2o$o4b3ob3o4bo$o4bobo bo4bo$o4bobo bo4bo$4b2obob2o4b$2b3o3b3o!",
+    },
+    {
+      name: "Pentadecathlon (p15)",
+      size: "10×3",
+      rle: "x=10,y=3\no2bo4bo2bo$b2o4b2ob$o2bo4bo2bo!",
+    },
+  ],
+  Spaceships: [
+    { name: "Glider", size: "3×3", rle: "x=3,y=3\nbob$2ob$3o!" },
+    { name: "LWSS", size: "5×4", rle: "x=5,y=4\nbo3b$4ob$o3ob$b4ob!" },
+    { name: "MWSS", size: "6×5", rle: "x=6,y=5\nb2o3b$o4b$o3ob$b5ob$2b4ob!" },
+    { name: "HWSS", size: "7×5", rle: "x=7,y=5\nb3o4b$o5b$o4ob$b6ob$2b5ob!" },
+  ],
+  Guns: [
+    {
+      name: "Gosper Glider Gun",
+      size: "36×9",
+      rle: "x=36,y=9\n24bob11b$22bobobob11b$12b2ob6b2o12b2ob$11bo3bo4b2o12b2ob$2o8bo5bo3b2o14b$2o8bo3bobo4b2o12b$10bo5bo7bobob$11bo3bo10bob$12b2ob!",
+    },
+  ],
+  Methuselahs: [
+    { name: "R-Pentomino", size: "3×3", rle: "x=3,y=3\nb2ob$2ob$bo!" },
+    { name: "Diehard", size: "8×3", rle: "x=8,y=3\n6bob$2o6b$bo3b3ob!" },
+    { name: "Acorn", size: "7×3", rle: "x=7,y=3\nbo5b$3bob2b$2o2b3ob!" },
+  ],
+};
+
 // Helpers
 function key(r, c) {
   return `${r},${c}`;
@@ -346,7 +389,138 @@ function setMode(mode) {
   if (mode === "erase") canvas.classList.add("erase-mode");
 }
 
+// RLE Parser
+function parseRLE(rle) {
+  const lines = rle.split("\n").filter((l) => !l.startsWith("#"));
+  let body = lines.join("");
+  const dataStart = body.search(/[bo$!]/);
+  if (dataStart > 0) body = body.slice(dataStart);
+
+  const result = new Set();
+  let row = 0,
+    col = 0,
+    count = "";
+
+  for (const ch of body) {
+    if (ch >= "0" && ch <= "9") {
+      count += ch;
+      continue;
+    }
+    const n = count ? parseInt(count) : 1;
+    count = "";
+    if (ch === "b") {
+      col += n;
+    } else if (ch === "o") {
+      for (let j = 0; j < n; j++) result.add(key(row, col + j));
+      col += n;
+    } else if (ch === "$") {
+      row += n;
+      col = 0;
+    } else if (ch === "!") {
+      break;
+    }
+  }
+  return result;
+}
+
+// Load pattern centered on screen
+function loadPattern(patternCells) {
+  if (patternCells.size === 0) return;
+  const coords = [...patternCells].map((k) => unkey(k));
+  const minR = Math.min(...coords.map(([r]) => r));
+  const maxR = Math.max(...coords.map(([r]) => r));
+  const minC = Math.min(...coords.map(([, c]) => c));
+  const maxC = Math.max(...coords.map(([, c]) => c));
+  const centerR = Math.floor((minR + maxR) / 2);
+  const centerC = Math.floor((minC + maxC) / 2);
+  const { r: screenR, c: screenC } = screenToCell(
+    canvas.width / 2,
+    canvas.height / 2,
+  );
+  const dr = screenR - centerR,
+    dc = screenC - centerC;
+  patternCells.forEach((k) => {
+    const [r, c] = unkey(k);
+    cells.add(key(r + dr, c + dc));
+  });
+  population = cells.size;
+  document.getElementById("populationCount").textContent =
+    population.toLocaleString();
+  render();
+}
+
+function loadRLEPattern(rle) {
+  try {
+    const parsed = parseRLE(rle);
+    loadPattern(parsed);
+  } catch (e) {
+    alert("Error parsing RLE pattern");
+  }
+}
+
+document.getElementById("loadRLEBtn").onclick = () => {
+  const rle = document.getElementById("rleArea").value.trim();
+  if (rle) loadRLEPattern(rle);
+};
+
+// Build pattern UI
+function buildPatternUI() {
+  const container = document.getElementById("patternCategories");
+  Object.entries(PATTERNS).forEach(([category, patterns]) => {
+    const div = document.createElement("div");
+    div.className = "pattern-category";
+    const header = document.createElement("div");
+    header.className = "pattern-category-header";
+    header.innerHTML = `<span>${category}</span><span class="arrow">▶</span>`;
+    const list = document.createElement("div");
+    list.className = "pattern-list";
+    header.onclick = () => {
+      header.classList.toggle("open");
+      list.classList.toggle("open");
+    };
+    patterns.forEach((p) => {
+      const item = document.createElement("div");
+      item.className = "pattern-item";
+      item.innerHTML = `<span>${p.name}</span><span class="pattern-size">${p.size}</span>`;
+      item.onclick = () => {
+        document
+          .querySelectorAll(".pattern-item")
+          .forEach((i) => i.classList.remove("selected"));
+        item.classList.add("selected");
+        loadRLEPattern(p.rle);
+      };
+      list.appendChild(item);
+    });
+    div.append(header, list);
+    container.appendChild(div);
+  });
+  // Open first category
+  container.querySelector(".pattern-category-header").classList.add("open");
+  container.querySelector(".pattern-list").classList.add("open");
+}
+
+document.getElementById("patternSearch").oninput = function () {
+  const q = this.value.toLowerCase().trim();
+  document.querySelectorAll(".pattern-category").forEach((cat) => {
+    const list = cat.querySelector(".pattern-list");
+    const header = cat.querySelector(".pattern-category-header");
+    let any = false;
+    cat.querySelectorAll(".pattern-item").forEach((item) => {
+      const match =
+        !q || item.querySelector("span").textContent.toLowerCase().includes(q);
+      item.style.display = match ? "" : "none";
+      if (match) any = true;
+    });
+    cat.style.display = any ? "" : "none";
+    if (q && any) {
+      header.classList.add("open");
+      list.classList.add("open");
+    }
+  });
+};
+
 // Init
+buildPatternUI();
 render();
 
 // Buttons - Left Sidebar
