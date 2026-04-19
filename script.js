@@ -219,7 +219,8 @@ function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Background
-  ctx.fillStyle = "#0d0d0f";
+  const cs = getComputedStyle(document.documentElement);
+  ctx.fillStyle = cs.getPropertyValue("--dead").trim();
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Visible range
@@ -230,7 +231,7 @@ function render() {
 
   // Grid lines
   if (cellSize >= 4) {
-    ctx.strokeStyle = "rgba(255,255,255,0.04)";
+    ctx.strokeStyle = cs.getPropertyValue("--grid-line").trim();
     ctx.lineWidth = 0.5;
     ctx.beginPath();
     for (let c = minC; c <= maxC; c++) {
@@ -248,7 +249,7 @@ function render() {
 
   // Alive cells
   const pad = cellSize > 3 ? 1 : 0;
-  ctx.fillStyle = "#5b8aff";
+  ctx.fillStyle = cs.getPropertyValue("--alive").trim();
   cells.forEach((k) => {
     const [r, c] = unkey(k);
     if (r < minR || r > maxR || c < minC || c > maxC) return;
@@ -261,7 +262,7 @@ function render() {
   });
 
   // Born cell highlight
-  ctx.fillStyle = "#a0ffb0";
+  ctx.fillStyle = cs.getPropertyValue("--born").trim();
   bornCells.forEach((k) => {
     if (!cells.has(k)) return;
     const [r, c] = unkey(k);
@@ -609,6 +610,16 @@ document.getElementById("fpsSlider").oninput = function () {
 };
 document.querySelectorAll(".mode-btn").forEach((btn) => {
   btn.onclick = () => setMode(btn.dataset.mode);
+});
+document.querySelectorAll(".theme-btn").forEach((btn) => {
+  btn.onclick = () => {
+    document
+      .querySelectorAll(".theme-btn")
+      .forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.body.dataset.theme = btn.dataset.theme;
+    render();
+  };
 });
 
 pause(); // default state

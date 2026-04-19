@@ -342,6 +342,78 @@ body {
 .search-input::placeholder {
   color: var(--text-dimmer);
 }
+
+.theme-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.theme-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.theme-btn:hover,
+.theme-btn.active {
+  border-color: currentColor;
+  box-shadow: 0 0 8px currentColor;
+  transform: scale(1.1);
+}
+
+/* Themes — override CSS vars */
+body[data-theme="neon"] {
+  --alive: #00ffff;
+  --born: #fff;
+  --dead: #020d10;
+  --grid-line: rgba(0, 255, 255, 0.06);
+  --accent: #00e5ff;
+  --accent-glow: rgba(0, 229, 255, 0.2);
+}
+body[data-theme="lava"] {
+  --alive: #ff6b35;
+  --born: #ffdd57;
+  --dead: #100505;
+  --grid-line: rgba(255, 100, 50, 0.06);
+  --accent: #ff6b35;
+  --accent-glow: rgba(255, 107, 53, 0.2);
+}
+body[data-theme="ice"] {
+  --alive: #88c0ff;
+  --born: #fff;
+  --dead: #040c18;
+  --grid-line: rgba(136, 192, 255, 0.06);
+  --accent: #88c0ff;
+  --accent-glow: rgba(136, 192, 255, 0.2);
+}
+body[data-theme="mono"] {
+  --alive: #fff;
+  --born: #aaa;
+  --dead: #050505;
+  --grid-line: rgba(255, 255, 255, 0.05);
+  --accent: #fff;
+  --accent-glow: rgba(255, 255, 255, 0.15);
+}
+body[data-theme="matrix"] {
+  --alive: #00ff41;
+  --born: #ccffdd;
+  --dead: #000300;
+  --grid-line: rgba(0, 255, 65, 0.05);
+  --accent: #00ff41;
+  --accent-glow: rgba(0, 255, 65, 0.2);
+  --surface: #000a00;
+  --surface2: #001200;
+  --border: #003300;
+  --border2: #005500;
+}
+
 .rle-textarea {
   width: 100%;
   height: 80px;
