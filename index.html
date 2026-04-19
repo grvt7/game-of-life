@@ -211,6 +211,58 @@
       <span>Scroll to zoom · Drag to pan · Click to draw</span>
     </div>
 
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+      <div class="modal">
+        <div class="modal-header">
+          <span>Settings</span>
+          <button class="modal-close" id="closeSettings">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="setting-row">
+            <label>Show grid lines</label>
+            <label class="toggle"
+              ><input type="checkbox" id="showGridToggle" checked /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
+          <div class="setting-row">
+            <label>Wrap edges (toroidal)</label>
+            <label class="toggle"
+              ><input type="checkbox" id="wrapToggle" /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
+          <div class="setting-row">
+            <label>Show population graph</label>
+            <label class="toggle"
+              ><input type="checkbox" id="graphToggle" /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
+          <div class="setting-row">
+            <label>Cell trail / fade</label>
+            <label class="toggle"
+              ><input type="checkbox" id="trailToggle" /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
+          <div class="setting-row">
+            <label>Born cell highlight</label>
+            <label class="toggle"
+              ><input type="checkbox" id="highlightToggle" checked /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="script.js"></script>
   </body>
 </html>

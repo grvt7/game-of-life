@@ -13,6 +13,10 @@ let cells = new Set(); // keys are "row,col" strings
 let generation = 0;
 let population = 0;
 let drawMode = "draw"; // 'draw' | 'erase' | 'pan'
+let showGrid = true;
+let wrapEdges = false;
+let showTrail = false;
+let showHighlight = true;
 
 // Interaction
 let isDrawing = false;
@@ -230,7 +234,7 @@ function render() {
   const maxR = Math.ceil((canvas.height - originY) / cellSize) + 1;
 
   // Grid lines
-  if (cellSize >= 4) {
+  if (showGrid && cellSize >= 4) {
     ctx.strokeStyle = cs.getPropertyValue("--grid-line").trim();
     ctx.lineWidth = 0.5;
     ctx.beginPath();
@@ -247,8 +251,24 @@ function render() {
     ctx.stroke();
   }
 
-  // Alive cells
   const pad = cellSize > 3 ? 1 : 0;
+
+  // Dying cell trail
+  if (showTrail) {
+    ctx.fillStyle = cs.getPropertyValue("--dying").trim() + "44";
+    dyingCells.forEach((k) => {
+      const [r, c] = unkey(k);
+      if (r < minR || r > maxR || c < minC || c > maxC) return;
+      ctx.fillRect(
+        c * cellSize + originX + pad,
+        r * cellSize + originY + pad,
+        cellSize - pad * 2,
+        cellSize - pad * 2,
+      );
+    });
+  }
+
+  // Alive cells
   ctx.fillStyle = cs.getPropertyValue("--alive").trim();
   cells.forEach((k) => {
     const [r, c] = unkey(k);
@@ -262,18 +282,20 @@ function render() {
   });
 
   // Born cell highlight
-  ctx.fillStyle = cs.getPropertyValue("--born").trim();
-  bornCells.forEach((k) => {
-    if (!cells.has(k)) return;
-    const [r, c] = unkey(k);
-    if (r < minR || r > maxR || c < minC || c > maxC) return;
-    ctx.fillRect(
-      c * cellSize + originX + pad,
-      r * cellSize + originY + pad,
-      cellSize - pad * 2,
-      cellSize - pad * 2,
-    );
-  });
+  if (showHighlight) {
+    ctx.fillStyle = cs.getPropertyValue("--born").trim();
+    bornCells.forEach((k) => {
+      if (!cells.has(k)) return;
+      const [r, c] = unkey(k);
+      if (r < minR || r > maxR || c < minC || c > maxC) return;
+      ctx.fillRect(
+        c * cellSize + originX + pad,
+        r * cellSize + originY + pad,
+        cellSize - pad * 2,
+        cellSize - pad * 2,
+      );
+    });
+  }
 }
 
 // Mouse drawing
@@ -621,5 +643,28 @@ document.querySelectorAll(".theme-btn").forEach((btn) => {
     render();
   };
 });
+document.getElementById("settingsBtn").onclick = () =>
+  document.getElementById("settingsModal").classList.add("open");
+document.getElementById("closeSettings").onclick = () =>
+  document.getElementById("settingsModal").classList.remove("open");
+document.getElementById("settingsModal").onclick = (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove("open");
+};
+
+document.getElementById("showGridToggle").onchange = function () {
+  showGrid = this.checked;
+  render();
+};
+document.getElementById("wrapToggle").onchange = function () {
+  wrapEdges = this.checked;
+};
+document.getElementById("trailToggle").onchange = function () {
+  showTrail = this.checked;
+  render();
+};
+document.getElementById("highlightToggle").onchange = function () {
+  showHighlight = this.checked;
+  render();
+};
 
 pause(); // default state
