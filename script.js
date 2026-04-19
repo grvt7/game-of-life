@@ -667,4 +667,68 @@ document.getElementById("highlightToggle").onchange = function () {
   render();
 };
 
+document.getElementById("helpBtn").onclick = () =>
+  document.getElementById("helpModal").classList.add("open");
+document.getElementById("closeHelp").onclick = () =>
+  document.getElementById("helpModal").classList.remove("open");
+document.getElementById("helpModal").onclick = (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove("open");
+};
+
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  switch (e.key) {
+    case " ":
+      e.preventDefault();
+      running ? pause() : play();
+      break;
+    case "s":
+    case "S":
+      if (!running) {
+        step();
+        render();
+      }
+      break;
+    case "r":
+    case "R":
+      clearGrid();
+      break;
+    case "f":
+    case "F":
+      fitToContent();
+      break;
+    case "d":
+    case "D":
+      setMode("draw");
+      break;
+    case "e":
+    case "E":
+      setMode("erase");
+      break;
+    case "p":
+    case "P":
+      setMode("pan");
+      break;
+    case "g":
+    case "G":
+      showGrid = !showGrid;
+      document.getElementById("showGridToggle").checked = showGrid;
+      render();
+      break;
+    case "+":
+    case "=":
+      zoomAt(canvas.width / 2, canvas.height / 2, 1.15);
+      break;
+    case "-":
+    case "_":
+      zoomAt(canvas.width / 2, canvas.height / 2, 0.87);
+      break;
+    case "Escape":
+      document
+        .querySelectorAll(".modal-overlay")
+        .forEach((m) => m.classList.remove("open"));
+      break;
+  }
+});
+
 pause(); // default state

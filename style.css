@@ -590,3 +590,20 @@ body[data-theme="matrix"] {
   font-weight: 500;
   min-width: 120px;
 }
+
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 16px;
+  align-items: center;
+}
+.key {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--accent);
+  white-space: nowrap;
+  text-align: center;
+}
