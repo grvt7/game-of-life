@@ -190,7 +190,10 @@
           border-top: 1px solid var(--border);
         "
       >
-        <div class="section-label">IMPORT RLE</div>
+        <div class="section-label">IMPORT / EXPORT</div>
+        <button class="ctrl-btn full-width" id="exportRLEBtn">
+          ↑ Export RLE
+        </button>
         <textarea
           id="rleArea"
           class="rle-textarea"
@@ -259,6 +262,14 @@
               ></span
             ></label>
           </div>
+          <div class="setting-row">
+            <label>Show population graph</label>
+            <label class="toggle"
+              ><input type="checkbox" id="graphToggle" /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
         </div>
       </div>
     </div>
@@ -287,6 +298,8 @@
         </div>
       </div>
     </div>
+
+    <canvas id="graphCanvas" class="graph-canvas hidden"></canvas>
 
     <script src="script.js"></script>
   </body>

@@ -1,5 +1,7 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+const graphCanvas = document.getElementById("graphCanvas");
+const graphCtx = graphCanvas.getContext("2d");
 
 // Viewport
 let cellSize = 10;
@@ -35,6 +37,11 @@ let fpsAccum = 0;
 // Born/ Dying Cells
 let bornCells = new Set();
 let dyingCells = new Set();
+
+// Graph
+let showGraph = false;
+let popHistory = [];
+const MAX_HISTORY = 300;
 
 // Pattern Library
 const PATTERNS = {
@@ -298,6 +305,37 @@ function render() {
   }
 }
 
+function encodeRLE(cells) {
+  if (cells.size === 0) return "x=0,y=0\n!";
+  const coords = [...cells].map((k) => {
+    const [r, c] = k.split(",").map(Number);
+    return { r, c };
+  });
+  const minR = Math.min(...coords.map((c) => c.r)),
+    minC = Math.min(...coords.map((c) => c.c));
+  const maxR = Math.max(...coords.map((c) => c.r)),
+    maxC = Math.max(...coords.map((c) => c.c));
+  const w = maxC - minC + 1,
+    h = maxR - minR + 1;
+  const grid = Array.from({ length: h }, () => Array(w).fill(false));
+  coords.forEach(({ r, c }) => (grid[r - minR][c - minC] = true));
+  let body = "";
+  for (let r = 0; r < h; r++) {
+    let row = "";
+    let run = 1;
+    for (let c = 1; c <= w; c++) {
+      if (c < w && grid[r][c] === grid[r][c - 1]) {
+        run++;
+        continue;
+      }
+      row += (run > 1 ? run : "") + (grid[r][c - 1] ? "o" : "b");
+      run = 1;
+    }
+    body += row.replace(/b+$/, "") + (r < h - 1 ? "$" : "");
+  }
+  return `x=${w}, y=${h}\n${body}!`;
+}
+
 // Mouse drawing
 function toggleCell(r, c) {
   const k = key(r, c);
@@ -342,6 +380,9 @@ function step() {
   cells = next;
   generation++;
   population = cells.size;
+  popHistory.push(population);
+  if (popHistory.length > MAX_HISTORY) popHistory.shift();
+  if (showGraph) drawGraph();
   document.getElementById("generationCount").textContent =
     generation.toLocaleString();
   document.getElementById("populationCount").textContent =
@@ -414,6 +455,33 @@ function clearGrid() {
   document.getElementById("generationCount").textContent = "0";
   document.getElementById("populationCount").textContent = "0";
   render();
+}
+
+function drawGraph() {
+  const w = graphCanvas.width,
+    h = graphCanvas.height;
+  graphCtx.clearRect(0, 0, w, h);
+  graphCtx.fillStyle = "rgba(13,13,15,0.85)";
+  graphCtx.fillRect(0, 0, w, h);
+  if (popHistory.length < 2) return;
+  const maxPop = Math.max(...popHistory, 1);
+  const accent = getComputedStyle(document.documentElement)
+    .getPropertyValue("--accent")
+    .trim();
+  graphCtx.strokeStyle = accent;
+  graphCtx.lineWidth = 1.5;
+  graphCtx.beginPath();
+  popHistory.forEach((p, i) => {
+    const x = (i / (MAX_HISTORY - 1)) * w;
+    const y = h - (p / maxPop) * (h - 4) - 2;
+    i === 0 ? graphCtx.moveTo(x, y) : graphCtx.lineTo(x, y);
+  });
+  graphCtx.stroke();
+  graphCtx.fillStyle = accent + "22";
+  graphCtx.lineTo(w, h);
+  graphCtx.lineTo(0, h);
+  graphCtx.closePath();
+  graphCtx.fill();
 }
 
 canvas.addEventListener("mousedown", (e) => {
@@ -730,5 +798,19 @@ document.addEventListener("keydown", (e) => {
       break;
   }
 });
+
+document.getElementById("exportRLEBtn").onclick = () => {
+  const rle = encodeRLE(cells);
+  document.getElementById("rleArea").value = rle;
+  navigator.clipboard
+    ?.writeText(rle)
+    .then(() => alert("RLE copied to clipboard!"));
+};
+
+document.getElementById("graphToggle").onchange = function () {
+  showGraph = this.checked;
+  graphCanvas.classList.toggle("hidden", !showGraph);
+  if (showGraph) drawGraph();
+};
 
 pause(); // default state
